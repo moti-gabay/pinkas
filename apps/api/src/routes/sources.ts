@@ -16,7 +16,7 @@ export function maskAccount(externalId: string): string {
   return digits.length >= 4 ? `****${digits.slice(-4)}` : '****';
 }
 
-const toSourceDto = (s: typeof schema.sources.$inferSelect) => ({
+export const toSourceDto = (s: typeof schema.sources.$inferSelect) => ({
   id: s.id,
   kind: s.kind,
   companyId: s.companyId as never,

@@ -18,9 +18,10 @@ export interface LoadedHousehold {
 
 export async function loadHousehold(
   db: Db,
-  opts: { months?: number; seed?: number; endMonth?: string } = {},
+  opts: { months?: number; seed?: number; endMonth?: string; excludeByTag?: boolean } = {},
 ): Promise<LoadedHousehold> {
-  const household = generateHousehold(opts);
+  const { excludeByTag = true, ...genOpts } = opts;
+  const household = generateHousehold(genOpts);
   const sourceIds: Record<string, string> = {};
   const accountIds: Record<string, string> = {};
   for (const acc of household.accounts) {
@@ -59,7 +60,8 @@ export async function loadHousehold(
     const res = await ingest(db, { sourceId, rows });
     rowsAdded += res.rowsAdded;
   }
-  // Phase-2 linking stand-in: exclude settlements and own transfers by their fixture tags.
+  // Linking stand-in (when relink is not run): exclude settlements and own transfers by their fixture tags.
+  if (!excludeByTag) return { household, accountIds, sourceIds, rowsAdded };
   for (const [tag, reason] of [
     ['card_settlement', 'card_settlement'],
     ['transfer', 'internal_transfer'],

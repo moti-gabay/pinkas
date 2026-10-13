@@ -20,10 +20,15 @@ describe('migrations', () => {
         )
       ).rows[0]!.n;
     expect(Number(await tables())).toBeGreaterThan(15);
+    expect(await migrateDown(t.pool)).toBe('0002_sync_queue.sql');
     expect(await migrateDown(t.pool)).toBe('0001_triggers_views.sql');
     expect(await migrateDown(t.pool)).toBe('0000_init.sql');
     expect(await tables()).toBe('1'); // schema_migrations only
-    expect(await migrateUp(t.pool)).toEqual(['0000_init.sql', '0001_triggers_views.sql']);
+    expect(await migrateUp(t.pool)).toEqual([
+      '0000_init.sql',
+      '0001_triggers_views.sql',
+      '0002_sync_queue.sql',
+    ]);
     expect(await migrateUp(t.pool)).toEqual([]);
   });
 

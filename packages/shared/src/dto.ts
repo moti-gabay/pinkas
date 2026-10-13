@@ -90,7 +90,10 @@ export const createRuleBody = z.object({
   /** Re-categorize existing rule/default-categorized rows that match. Manual choices are never overwritten. */
   applyToExisting: z.boolean().default(true),
 });
-export const updateRuleBody = createRuleBody.partial().omit({ origin: true });
+export const updateRuleBody = createRuleBody
+  .partial()
+  .omit({ origin: true })
+  .extend({ enabled: z.boolean().optional() });
 
 // transactions
 export const transactionDto = z.object({
@@ -176,3 +179,28 @@ export type TransactionDto = z.infer<typeof transactionDto>;
 export type TransactionsQuery = z.infer<typeof transactionsQuery>;
 export type MonthReportDto = z.infer<typeof monthReportDto>;
 export type AuthStatus = z.infer<typeof authStatus>;
+
+// scraper sources (phase 2)
+export const credentialsBody = z.record(z.string(), z.string().min(1).max(200));
+export const createScraperSourceBody = z.object({
+  companyId: z.enum(companyIds),
+  displayName: z.string().min(1).max(100),
+  credentials: credentialsBody,
+  scheduleCron: z.string().max(100).nullable().optional(),
+});
+export const syncRunDto = z.object({
+  id: uuid,
+  sourceId: uuid,
+  trigger: z.enum(['schedule', 'manual']),
+  startedAt: z.string(),
+  finishedAt: z.string().nullable(),
+  status: z.enum(['queued', 'running', 'success', 'failed', 'partial']),
+  errorType: z.string().nullable(),
+  errorMessage: z.string().nullable(),
+  accountsSeen: z.number().int(),
+  rowsAdded: z.number().int(),
+  rowsUpdated: z.number().int(),
+  rowsLinked: z.number().int(),
+  durationMs: z.number().int().nullable(),
+});
+export type SyncRunDto = z.infer<typeof syncRunDto>;

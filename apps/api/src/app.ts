@@ -21,6 +21,7 @@ import { healthRoutes } from './routes/health.js';
 import { importRoutes } from './routes/imports.js';
 import { reportRoutes } from './routes/reports.js';
 import { sourceRoutes } from './routes/sources.js';
+import { syncRoutes } from './routes/sync.js';
 import { transactionRoutes } from './routes/transactions.js';
 
 export interface BuildOptions {
@@ -98,6 +99,7 @@ export async function buildApp(opts: BuildOptions = {}) {
   await app.register(healthRoutes);
   await app.register(authRoutes);
   await app.register(sourceRoutes);
+  await app.register(syncRoutes);
   await app.register(categoryRoutes);
   await app.register(transactionRoutes);
   await app.register(reportRoutes);

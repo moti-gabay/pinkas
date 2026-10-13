@@ -16,7 +16,7 @@ import {
 } from '@pinkas/file-parsers';
 import { PinkasError } from '@pinkas/shared';
 import { and, eq } from 'drizzle-orm';
-import { ingest, schema, type Db, type IngestResult, type RowDecision } from '@pinkas/db';
+import { ingest, relink, schema, type Db, type IngestResult, type RowDecision } from '@pinkas/db';
 
 const sha256 = (b: Uint8Array) => createHash('sha256').update(b).digest('hex');
 
@@ -300,6 +300,7 @@ export class ImportService {
       })
       .where(eq(schema.imports.id, importId));
     await rm(this.path(importId), { force: true });
+    await relink(this.db);
     return {
       rowsAdded: ingested.rowsAdded,
       rowsUpdated: ingested.rowsUpdated,

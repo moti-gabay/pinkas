@@ -31,8 +31,11 @@ export interface SettlementMatch {
 /** Issuer vocabulary as it appears in bank descriptions. Extend from real statements. */
 export const issuerPatterns: readonly { companyId: string; patterns: RegExp[] }[] = [
   { companyId: 'max', patterns: [/מקס/u, /\bmax\b/iu, /לאומי קארד/u] },
-  { companyId: 'visaCal', patterns: [/(^|\s)כאל(\s|$)/u, /\bcal\b/iu, /ויזה כאל/u] },
-  { companyId: 'isracard', patterns: [/ישראכרט/u, /isracard/iu, /מסטרקארד/u] },
+  {
+    companyId: 'visaCal',
+    patterns: [/(^|\s)כאל(\s|$)/u, /\bcal\b/iu, /ויזה כאל/u, /כרטיסי אשראי לישראל/u],
+  },
+  { companyId: 'isracard', patterns: [/ישראכרט/u, /isracard/iu, /מסטרקארד/u, /פועלים אקספרס/u] },
   { companyId: 'amex', patterns: [/אמריקן אקספרס/u, /amex/iu] },
 ];
 

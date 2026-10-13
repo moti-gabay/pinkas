@@ -8,6 +8,7 @@ const row = (over: Partial<SummaryRow>): SummaryRow => ({
   categoryKind: 'expense',
   isFixed: false,
   excludeReason: undefined,
+  accountType: 'checking',
   ...over,
 });
 

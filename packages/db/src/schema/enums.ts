@@ -33,7 +33,13 @@ export const ruleOrigin = pgEnum('rule_origin', ['seed', 'user', 'learned']);
 export const cadence = pgEnum('cadence', ['weekly', 'monthly', 'bimonthly', 'quarterly', 'yearly']);
 export const recurringStatus = pgEnum('recurring_status', ['active', 'paused', 'ended', 'ignored']);
 export const syncTrigger = pgEnum('sync_trigger', ['schedule', 'manual']);
-export const syncStatus = pgEnum('sync_status', ['running', 'success', 'failed', 'partial']);
+export const syncStatus = pgEnum('sync_status', [
+  'queued',
+  'running',
+  'success',
+  'failed',
+  'partial',
+]);
 export const importStatus = pgEnum('import_status', [
   'uploaded',
   'parsed',
