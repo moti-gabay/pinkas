@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { formatAgorot, formatDate, formatMonth } from './format.js';
 
-const strip = (s: string) => s.replace(/[‎ ]/g, ' ').trim();
+const strip = (s: string) => s.replace(/[\u200e ]/g, ' ').trim();
 
 describe('formatAgorot', () => {
   it('formats agorot as ILS with two decimals', () => {

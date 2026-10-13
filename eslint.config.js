@@ -44,6 +44,8 @@ export default tseslint.config(
       ],
       '@typescript-eslint/restrict-template-expressions': ['error', { allowNumber: true }],
       'no-console': 'error',
+      // Fastify plugins/routes are async by contract even when they only register handlers.
+      '@typescript-eslint/require-await': 'off',
       // Only the sync worker's scraper module may touch the scraping library.
       'no-restricted-imports': [
         'error',
@@ -100,6 +102,16 @@ export default tseslint.config(
   },
   {
     files: ['**/*.test.ts', '**/*.test.tsx', 'packages/fixtures/src/**', 'scripts/**'],
-    rules: { 'no-console': 'off', '@typescript-eslint/no-non-null-assertion': 'off' },
+    rules: {
+      // Test bodies read untyped JSON responses; the assertions are the type check.
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-argument': 'off',
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-unsafe-return': 'off',
+      'no-console': 'off',
+      '@typescript-eslint/no-non-null-assertion': 'off',
+      'no-restricted-imports': 'off',
+    },
   },
 );

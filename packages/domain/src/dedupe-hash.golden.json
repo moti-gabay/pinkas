@@ -1,0 +1,192 @@
+[
+  {
+    "desc": "שופרסל דיל סניף רמת גן",
+    "id": "ID0",
+    "amount": -1000,
+    "date": "2026-01-01",
+    "hash": "54529d4fcac8e1037493d82ede07582c61718928bec09c208e8373575e041208"
+  },
+  {
+    "desc": "‏שופרסל דיל 1234",
+    "amount": -1137,
+    "date": "2026-02-02",
+    "hash": "b9ddcf1ba77a58ee4d07f2e57ba5077d36109a3f3385cd661784dd8e74bd5ac7"
+  },
+  {
+    "desc": "WOLT  *Tel Aviv",
+    "amount": -1274,
+    "date": "2026-03-03",
+    "hash": "db089adde514ef8cc0f0fb9ca0ef7ff7aba781b5a36b6fe650a066dcb2404f25"
+  },
+  {
+    "desc": "Netflix.com",
+    "id": "ID3",
+    "amount": -1411,
+    "date": "2026-04-04",
+    "hash": "219d585ee13d914ea95ea6814117919797b1944d8cacb6a0c48a484b47001bdb"
+  },
+  {
+    "desc": "פז - ת\"א 345",
+    "amount": -1548,
+    "date": "2026-05-05",
+    "hash": "1dab06740a23d05880e707a6a61abd2ba6ffec268a1dbc18601e3a56284fd1ee"
+  },
+  {
+    "desc": "חיוב - רמי לוי בע\"מ",
+    "amount": -1685,
+    "date": "2026-06-06",
+    "hash": "f86ce38d50440a15d41ed0c4bdee423ced87a9cc3bf33c2727115d7b1ff8410a"
+  },
+  {
+    "desc": "PAYBOX - דני כהן",
+    "id": "ID6",
+    "amount": -1822,
+    "date": "2026-07-07",
+    "hash": "6e085123d5b8576ba6f953d09d2265373f018dfadc1067a16713ca53e8051c44"
+  },
+  {
+    "desc": "😀 Cafe 42",
+    "amount": -1959,
+    "date": "2026-08-08",
+    "hash": "2d6dad31d36283c966d1d4466541d346f64b26087141d48303cbcb5ff86acf01"
+  },
+  {
+    "desc": "רב קו",
+    "amount": -2096,
+    "date": "2026-09-09",
+    "hash": "7840a904c83b9559aa88219a75820bcc0a8e5b777e295cca5fc23ae8a1ac94fb"
+  },
+  {
+    "desc": "AMAZON.COM*1A2B3C",
+    "id": "ID9",
+    "amount": -2233,
+    "date": "2026-01-10",
+    "hash": "9d4732daad4fae5cb2eaad53fe2512c10c77fbfbd8d74f45d7199bec7f8b77fe"
+  },
+  {
+    "desc": "Spotify AB",
+    "amount": -2370,
+    "date": "2026-02-11",
+    "hash": "6507e1c05e89e836c961bc59dbdaf51fcb36f7185b2198576e57c3baced300cd"
+  },
+  {
+    "desc": "סופר פארם  ",
+    "amount": -2507,
+    "date": "2026-03-12",
+    "hash": "aeb3345e557ababe5eedf6b805e0fba2fad900c7eb36d3fcb97434aea88e442f"
+  },
+  {
+    "desc": "העברה לחשבון 123456",
+    "id": "ID12",
+    "amount": -2644,
+    "date": "2026-04-13",
+    "hash": "b3611b48cf4cb05b3bad49fcb45fc54c67c76682582cf9d3bac1a43083478a95"
+  },
+  {
+    "desc": "ביט - משה",
+    "amount": -2781,
+    "date": "2026-05-14",
+    "hash": "74d2a2445a33b1fb36a723a684e92ca0f69e3ecff575e89a4a0c9d34d8b04d19"
+  },
+  {
+    "desc": "מקס איט פיננסים",
+    "amount": -2918,
+    "date": "2026-06-15",
+    "hash": "339e6b769ff9158ad2b66116fdfc0d0fe60c348e28bae178608d4ffd7ea2e608"
+  },
+  {
+    "desc": "כאל",
+    "id": "ID15",
+    "amount": -3055,
+    "date": "2026-07-16",
+    "hash": "ec8c6282665ce03ca54026e0e51c0842a5fa1b286d441807fc9d41d01e476575"
+  },
+  {
+    "desc": "ישראכרט",
+    "amount": -3192,
+    "date": "2026-08-17",
+    "hash": "d7c382a75d398abcbdc7bdc398161d8f1f776e495fec64bf4ec634c0d85f80f5"
+  },
+  {
+    "desc": "משכורת אוגוסט",
+    "amount": -3329,
+    "date": "2026-09-18",
+    "hash": "6960549b72c7d09e26d1c10bf1288b57349d4baa796859c9a510bf3fcc00e524"
+  },
+  {
+    "desc": "ארנונה עיריית תל אביב",
+    "id": "ID18",
+    "amount": -3466,
+    "date": "2026-01-19",
+    "hash": "0d4f314a019fc6d55f250216c697a347bd9870b2f493dfcbb911f77813e82e1a"
+  },
+  {
+    "desc": "חברת החשמל לישראל",
+    "amount": -3603,
+    "date": "2026-02-20",
+    "hash": "1641c858f45c3ae42f49dacb53a79d2076a0dccb7b7c19857375c7ca7e4a4305"
+  },
+  {
+    "desc": "Google *YouTube",
+    "amount": -3740,
+    "date": "2026-03-21",
+    "hash": "f28ee7b5a432f57f3b7f7d4c4958588e4b531ad78e0b9f48eae9408977f5edf1"
+  },
+  {
+    "desc": "apple.com/bill",
+    "id": "ID21",
+    "amount": -3877,
+    "date": "2026-04-22",
+    "hash": "31332c5f741a609ed6486998e40d0800b2315ae0fad3daa0be3642d2ddb750da"
+  },
+  {
+    "desc": "סלקום",
+    "amount": -4014,
+    "date": "2026-05-23",
+    "hash": "fff6f415dd9f0dbad20e29faa923d1b7c3f44ae32d850fd94eac2ebcb23aba1b"
+  },
+  {
+    "desc": "פנגו חניה",
+    "amount": -4151,
+    "date": "2026-06-24",
+    "hash": "6b5a438e47387aac34dfe1352cfb3fad10e6e87fe86138ab4f79f00b3a9ba544"
+  },
+  {
+    "desc": "דור אלון",
+    "id": "ID24",
+    "amount": -4288,
+    "date": "2026-07-25",
+    "hash": "410b626cffddcaa9c9655519c35d6b5d55d610cab14c097b92cc208f19c79434"
+  },
+  {
+    "desc": "יוחננוף",
+    "amount": -4425,
+    "date": "2026-08-26",
+    "hash": "72a45d5c152dc4056cbbc27d80253eddeafe6e250b4457e528f2fb8df3c762d1"
+  },
+  {
+    "desc": "טיב טעם",
+    "amount": -4562,
+    "date": "2026-09-27",
+    "hash": "8735aad4db4fe077e6e4a5d41f3db4e08d018fb38f59982c070aba1335e9ede6"
+  },
+  {
+    "desc": "איקאה",
+    "id": "ID27",
+    "amount": -4699,
+    "date": "2026-01-28",
+    "hash": "671936e809f59a9a2a003448b2ae1bfc87cc81bd2abd9790453bf0baf06d927a"
+  },
+  {
+    "desc": "Aliexpress",
+    "amount": -4836,
+    "date": "2026-02-01",
+    "hash": "87fcd6aa25a9f3ffb036961b049fc4674674bf924a67e0f320e4051e5059a406"
+  },
+  {
+    "desc": "תן ביס",
+    "amount": -4973,
+    "date": "2026-03-02",
+    "hash": "7c0569d0d5a505c34287150a2ff7144cf8983ba1c7bbaa01f8e2db18f4d44aac"
+  }
+]
