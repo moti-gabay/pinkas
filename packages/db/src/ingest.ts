@@ -8,7 +8,8 @@
  * `dryRun` returns the plan without writing (import preview).
  */
 import { createHash } from 'node:crypto';
-import { schema, type Db } from '@pinkas/db';
+import type { Db } from './client.js';
+import * as schema from './schema/index.js';
 import {
   applyRules,
   descriptionKey,

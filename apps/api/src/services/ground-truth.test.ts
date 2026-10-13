@@ -7,7 +7,7 @@ import { eq } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { startTestApp } from '../test-app.js';
 import { loadHousehold, type LoadedHousehold } from './demo-data.js';
-import { ingest } from './ingest.js';
+import { ingest } from '@pinkas/db';
 
 describe('fixture ground truth', () => {
   let t: Awaited<ReturnType<typeof startTestApp>>;

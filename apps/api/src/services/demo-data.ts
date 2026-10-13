@@ -7,7 +7,7 @@ import { schema, type Db } from '@pinkas/db';
 import { generateHousehold, type Household } from '@pinkas/fixtures';
 import { and, eq, inArray } from 'drizzle-orm';
 import { maskAccount } from '../routes/sources.js';
-import { ingest } from './ingest.js';
+import { ingest } from '@pinkas/db';
 
 export interface LoadedHousehold {
   household: Household;

@@ -5,7 +5,6 @@
 import { createHash } from 'node:crypto';
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { schema, type Db } from '@pinkas/db';
 import type { NormalizedTxn } from '@pinkas/domain';
 import {
   loadFile,
@@ -17,7 +16,7 @@ import {
 } from '@pinkas/file-parsers';
 import { PinkasError } from '@pinkas/shared';
 import { and, eq } from 'drizzle-orm';
-import { ingest, type IngestResult, type RowDecision } from '../services/ingest.js';
+import { ingest, schema, type Db, type IngestResult, type RowDecision } from '@pinkas/db';
 
 const sha256 = (b: Uint8Array) => createHash('sha256').update(b).digest('hex');
 

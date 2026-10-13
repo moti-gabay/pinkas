@@ -3,7 +3,7 @@ import type { NormalizedTxn } from '@pinkas/domain';
 import { eq } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { startTestApp } from '../test-app.js';
-import { ingest } from './ingest.js';
+import { ingest } from '@pinkas/db';
 
 const base = (accountId: string, over: Partial<NormalizedTxn> = {}): NormalizedTxn => ({
   accountId,
