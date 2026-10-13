@@ -1,0 +1,18 @@
+@import 'tailwindcss';
+
+:root {
+  --font-sans: 'Heebo', system-ui, sans-serif;
+  --color-income: #15803d;
+  --color-expense: #b91c1c;
+}
+html {
+  font-family: var(--font-sans);
+}
+body {
+  @apply bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100;
+}
+.num {
+  font-variant-numeric: tabular-nums;
+  direction: ltr;
+  unicode-bidi: isolate;
+}

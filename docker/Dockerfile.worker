@@ -1,0 +1,34 @@
+FROM node:24-bookworm-slim AS base
+ENV PNPM_HOME=/pnpm PATH=/pnpm:$PATH PUPPETEER_SKIP_DOWNLOAD=1 PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+RUN corepack enable && corepack prepare pnpm@10.33.0 --activate
+# System Chromium + fonts (Hebrew rendering matters for some bank pages). No npm-downloaded browser.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      chromium fonts-noto fonts-noto-color-emoji fonts-dejavu ca-certificates tzdata \
+    && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
+
+FROM base AS deps
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json .npmrc ./
+COPY apps/sync-worker/package.json apps/sync-worker/
+COPY apps/api/package.json apps/api/
+COPY apps/mcp-server/package.json apps/mcp-server/
+COPY apps/web/package.json apps/web/
+COPY packages/config/package.json packages/config/
+COPY packages/shared/package.json packages/shared/
+COPY packages/domain/package.json packages/domain/
+COPY packages/db/package.json packages/db/
+COPY packages/file-parsers/package.json packages/file-parsers/
+COPY packages/fixtures/package.json packages/fixtures/
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+
+FROM deps AS build
+COPY . .
+RUN pnpm turbo run build --filter=@pinkas/sync-worker...
+
+FROM base AS runtime
+ENV NODE_ENV=production TZ=Asia/Jerusalem
+RUN groupadd -r pinkas && useradd -r -g pinkas -d /app pinkas
+COPY --from=build --chown=pinkas:pinkas /app /app
+USER pinkas
+WORKDIR /app/apps/sync-worker
+CMD ["node", "dist/main.js"]

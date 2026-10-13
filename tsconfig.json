@@ -1,0 +1,11 @@
+{
+  "extends": "./packages/config/tsconfig.node.json",
+  "compilerOptions": {
+    "composite": false,
+    "declaration": false,
+    "declarationMap": false,
+    "noEmit": true,
+    "allowImportingTsExtensions": true
+  },
+  "include": ["scripts", "eslint.config.js", "vitest.config.ts"]
+}

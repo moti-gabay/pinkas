@@ -1,0 +1,145 @@
+name: pinkas
+
+x-logging: &logging
+  logging: { driver: json-file, options: { max-size: '10m', max-file: '3' } }
+
+services:
+  db:
+    image: postgres:17-bookworm
+    <<: *logging
+    environment:
+      POSTGRES_DB: pinkas
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD_FILE: /run/secrets/pg_superuser_password
+      TZ: Asia/Jerusalem
+    secrets:
+      [
+        pg_superuser_password,
+        pg_migrator_password,
+        pg_api_password,
+        pg_worker_password,
+        pg_readonly_password,
+        pg_backup_password,
+      ]
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
+    networks: [backend]
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d pinkas']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    # No `ports:` on purpose. The DB is reachable only inside the compose network.
+
+  migrate:
+    build: { context: ., dockerfile: docker/Dockerfile.node, args: { APP: api } }
+    <<: *logging
+    command: ['node', '../../packages/db/dist/migrate.js', 'up']
+    env_file: .env
+    environment:
+      DATABASE_URL: postgres://pinkas_migrator@db:5432/pinkas
+      PGPASSWORD_FILE: /run/secrets/pg_migrator_password
+    secrets: [pg_migrator_password]
+    depends_on: { db: { condition: service_healthy } }
+    networks: [backend]
+
+  api:
+    build: { context: ., dockerfile: docker/Dockerfile.node, args: { APP: api } }
+    <<: *logging
+    env_file: .env
+    environment:
+      API_HOST: 0.0.0.0
+      DATABASE_URL: postgres://pinkas_api@db:5432/pinkas
+      PGPASSWORD_FILE: /run/secrets/pg_api_password
+      UPLOAD_DIR: /data/uploads
+    secrets: [pg_api_password]
+    volumes:
+      - uploads:/data/uploads
+    depends_on: { migrate: { condition: service_completed_successfully } }
+    networks: [backend, frontend]
+    ports: ['127.0.0.1:3000:3000']
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: [no-new-privileges:true]
+
+  web:
+    build: { context: ., dockerfile: docker/Dockerfile.web }
+    <<: *logging
+    depends_on: [api]
+    networks: [frontend]
+    ports: ['127.0.0.1:5173:80']
+    security_opt: [no-new-privileges:true]
+
+  sync-worker:
+    build: { context: ., dockerfile: docker/Dockerfile.worker }
+    <<: *logging
+    env_file: .env
+    environment:
+      DATABASE_URL: postgres://pinkas_worker@db:5432/pinkas
+      PGPASSWORD_FILE: /run/secrets/pg_worker_password
+      CREDENTIALS_PRIVATE_KEY_FILE: /run/secrets/worker.key
+    secrets: [pg_worker_password, worker_key]
+    depends_on: { migrate: { condition: service_completed_successfully } }
+    networks: [backend, worker-egress]
+    shm_size: 1g
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+
+  mcp-server:
+    build: { context: ., dockerfile: docker/Dockerfile.node, args: { APP: mcp-server } }
+    <<: *logging
+    command: ['node', 'dist/main.js']
+    env_file: .env
+    environment:
+      MCP_HOST: 0.0.0.0
+      DATABASE_URL: postgres://pinkas_readonly@db:5432/pinkas
+      PGPASSWORD_FILE: /run/secrets/pg_readonly_password
+    secrets: [pg_readonly_password]
+    depends_on: { migrate: { condition: service_completed_successfully } }
+    networks: [backend]
+    ports: ['127.0.0.1:3100:3100']
+    read_only: true
+    security_opt: [no-new-privileges:true]
+
+  backup:
+    build: { context: ./apps/backup }
+    <<: *logging
+    environment:
+      PGHOST: db
+      PGUSER: pinkas_backup
+      PGDATABASE: pinkas
+      PGPASSWORD_FILE: /run/secrets/pg_backup_password
+      AGE_RECIPIENT_FILE: /run/secrets/backup_recipient
+      BACKUP_CRON: '30 3 * * *'
+      KEEP_DAILY: '30'
+      KEEP_MONTHLY: '12'
+    secrets: [pg_backup_password, backup_recipient]
+    volumes:
+      - ./data/backups:/backups
+    depends_on: { db: { condition: service_healthy } }
+    networks: [backend]
+    profiles: [backup]
+
+secrets:
+  pg_superuser_password: { file: ./docker/secrets/pg_superuser_password }
+  pg_migrator_password: { file: ./docker/secrets/pg_migrator_password }
+  pg_api_password: { file: ./docker/secrets/pg_api_password }
+  pg_worker_password: { file: ./docker/secrets/pg_worker_password }
+  pg_readonly_password: { file: ./docker/secrets/pg_readonly_password }
+  pg_backup_password: { file: ./docker/secrets/pg_backup_password }
+  worker_key: { file: '${PINKAS_KEY_DIR:-~/.pinkas}/worker.key' }
+  backup_recipient: { file: '${PINKAS_KEY_DIR:-~/.pinkas}/backup.pub' }
+
+volumes:
+  pgdata:
+  uploads:
+
+networks:
+  frontend:
+  backend:
+    internal: true
+  worker-egress:
+    # Phase 2 step 7 adds the egress proxy here and flips `internal: true`.

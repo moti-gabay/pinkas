@@ -1,0 +1,17 @@
+{
+  "extends": "@pinkas/config/tsconfig.node.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "composite": false,
+    "declaration": false,
+    "declarationMap": false
+  },
+  "include": ["src"],
+  "exclude": ["src/**/*.test.ts"],
+  "references": [
+    { "path": "../../packages/shared/tsconfig.build.json" },
+    { "path": "../../packages/domain/tsconfig.build.json" },
+    { "path": "../../packages/db/tsconfig.build.json" }
+  ]
+}

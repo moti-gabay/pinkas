@@ -1,0 +1,33 @@
+# Shared builder for api / mcp-server (worker has its own Dockerfile because of Chromium).
+FROM node:24-bookworm-slim AS base
+ENV PNPM_HOME=/pnpm PATH=/pnpm:$PATH PUPPETEER_SKIP_DOWNLOAD=1
+RUN corepack enable && corepack prepare pnpm@10.33.0 --activate
+WORKDIR /app
+
+FROM base AS deps
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json .npmrc ./
+COPY apps/api/package.json apps/api/
+COPY apps/mcp-server/package.json apps/mcp-server/
+COPY apps/sync-worker/package.json apps/sync-worker/
+COPY apps/web/package.json apps/web/
+COPY packages/config/package.json packages/config/
+COPY packages/shared/package.json packages/shared/
+COPY packages/domain/package.json packages/domain/
+COPY packages/db/package.json packages/db/
+COPY packages/file-parsers/package.json packages/file-parsers/
+COPY packages/fixtures/package.json packages/fixtures/
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+
+FROM deps AS build
+COPY . .
+ARG APP
+RUN pnpm turbo run build --filter=@pinkas/${APP}...
+
+FROM base AS runtime
+ARG APP
+ENV NODE_ENV=production
+RUN groupadd -r pinkas && useradd -r -g pinkas -d /app pinkas
+COPY --from=build --chown=pinkas:pinkas /app /app
+USER pinkas
+WORKDIR /app/apps/${APP}
+CMD ["node", "dist/server.js"]

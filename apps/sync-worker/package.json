@@ -1,0 +1,29 @@
+{
+  "name": "@pinkas/sync-worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/main.ts",
+    "build": "tsc -b tsconfig.build.json",
+    "start": "node dist/main.js",
+    "probe": "tsx src/scrapers/probe.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@pinkas/db": "workspace:*",
+    "@pinkas/domain": "workspace:*",
+    "@pinkas/shared": "workspace:*",
+    "israeli-bank-scrapers": "6.12.2",
+    "libsodium-wrappers": "0.8.4",
+    "pg-boss": "^12.38.0",
+    "pino": "^10.4.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@pinkas/config": "workspace:*",
+    "@types/libsodium-wrappers": "^0.7.14",
+    "pino-pretty": "^13.2.0"
+  }
+}

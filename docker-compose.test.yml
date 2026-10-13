@@ -1,0 +1,15 @@
+# Throwaway Postgres for integration/e2e tests and the restore drill. Exposed on localhost only.
+name: pinkas-test
+services:
+  db-test:
+    image: postgres:17-bookworm
+    environment:
+      POSTGRES_DB: pinkas_test
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: test
+    ports: ['127.0.0.1:55432:5432']
+    tmpfs: [/var/lib/postgresql/data]
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 2s
+      retries: 30

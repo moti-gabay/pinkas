@@ -1,0 +1,26 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended", ":semanticCommits"],
+  "lockFileMaintenance": { "enabled": true, "schedule": ["before 6am on monday"] },
+  "packageRules": [
+    {
+      "matchUpdateTypes": ["patch", "minor"],
+      "matchDepTypes": ["devDependencies"],
+      "automerge": true
+    },
+    {
+      "description": "Packages that see bank credentials or financial data: never automerge, require manual review.",
+      "matchPackageNames": [
+        "israeli-bank-scrapers",
+        "puppeteer",
+        "puppeteer-core",
+        "libsodium-wrappers",
+        "@anthropic-ai/sdk",
+        "argon2"
+      ],
+      "automerge": false,
+      "labels": ["security-review"],
+      "rangeStrategy": "pin"
+    }
+  ]
+}
