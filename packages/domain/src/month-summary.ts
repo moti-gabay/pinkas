@@ -8,6 +8,8 @@ export interface SummaryRow {
   categoryKind: 'expense' | 'income' | 'transfer' | undefined;
   isFixed: boolean;
   excludeReason: string | undefined;
+  /** Positive amounts on a card are refunds, never income, even before refund linking (phase 2) assigns a category. */
+  accountType: 'checking' | 'credit_card' | 'savings' | undefined;
 }
 
 export interface MonthSummary {
@@ -40,7 +42,9 @@ export function summarizeMonth(rows: readonly SummaryRow[], month: string): Mont
     counted++;
     const key = r.categoryId ?? 'uncategorized';
     byCategory[key] = (byCategory[key] ?? 0) + amt;
-    const isIncome = r.categoryKind === 'income' || (r.categoryKind === undefined && amt > 0);
+    const isIncome =
+      r.categoryKind === 'income' ||
+      (r.categoryKind === undefined && amt > 0 && r.accountType !== 'credit_card');
     if (isIncome) {
       income += amt;
     } else {

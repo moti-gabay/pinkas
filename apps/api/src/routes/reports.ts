@@ -24,9 +24,11 @@ export async function loadSummaryRows(
       categorySlug: c.slug,
       isFixed: sql<boolean>`coalesce(${t.isFixed}, ${c.isFixedDefault}, false)`,
       excludeReason: t.excludeReason,
+      accountType: schema.accounts.type,
     })
     .from(t)
     .leftJoin(c, eq(c.id, t.categoryId))
+    .innerJoin(schema.accounts, eq(schema.accounts.id, t.accountId))
     .where(and(gte(t.txnDate, monthRange(fromMonth).from), lte(t.txnDate, monthRange(toMonth).to)));
   // The 'uncategorized' system category carries no meaning for income vs. expense: such rows follow their sign.
   return rows.map((r) => ({

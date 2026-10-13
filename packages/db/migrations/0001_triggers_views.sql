@@ -34,15 +34,15 @@ LEFT JOIN categories c ON c.id = t.category_id
 WHERE t.exclude_reason IS NULL AND (c.kind IS NULL OR c.kind <> 'transfer');
 --> statement-breakpoint
 CREATE VIEW v_category_month AS
-SELECT to_char(txn_date, 'YYYY-MM') AS month, category_id, category_slug, category_kind, is_fixed,
+SELECT to_char(txn_date, 'YYYY-MM') AS month, category_id, category_slug, category_kind, is_fixed, account_type,
        SUM(charged_amount_agorot)::bigint AS amount_agorot, COUNT(*)::int AS txn_count
 FROM v_cashflow_transactions
-GROUP BY 1, 2, 3, 4, 5;
+GROUP BY 1, 2, 3, 4, 5, 6;
 --> statement-breakpoint
 CREATE VIEW v_monthly_cashflow AS
 SELECT month,
-       SUM(CASE WHEN category_kind = 'income' OR (category_kind IS NULL AND amount_agorot > 0) THEN amount_agorot ELSE 0 END)::bigint AS income_agorot,
-       (-SUM(CASE WHEN category_kind = 'income' OR (category_kind IS NULL AND amount_agorot > 0) THEN 0 ELSE amount_agorot END))::bigint AS expenses_agorot,
+       SUM(CASE WHEN category_kind = 'income' OR (category_kind IS NULL AND amount_agorot > 0 AND account_type <> 'credit_card') THEN amount_agorot ELSE 0 END)::bigint AS income_agorot,
+       (-SUM(CASE WHEN category_kind = 'income' OR (category_kind IS NULL AND amount_agorot > 0 AND account_type <> 'credit_card') THEN 0 ELSE amount_agorot END))::bigint AS expenses_agorot,
        SUM(amount_agorot)::bigint AS net_agorot
 FROM v_category_month
 GROUP BY month;
