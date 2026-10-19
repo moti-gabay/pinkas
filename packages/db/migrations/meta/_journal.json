@@ -12,6 +12,20 @@
     {
       "idx": 1,
       "version": "7",
+      "when": 1791919378043,
+      "tag": "0001_triggers_views",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791919378044,
+      "tag": "0002_sync_queue",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
       "when": 1792403502780,
       "tag": "0003_seed_versions",
       "breakpoints": true
