@@ -19,6 +19,7 @@ import { authRoutes } from './routes/auth.js';
 import { categoryRoutes } from './routes/categories.js';
 import { healthRoutes } from './routes/health.js';
 import { importRoutes } from './routes/imports.js';
+import { reconciliationRoutes } from './routes/reconciliation.js';
 import { reportRoutes } from './routes/reports.js';
 import { sourceRoutes } from './routes/sources.js';
 import { syncRoutes } from './routes/sync.js';
@@ -103,6 +104,7 @@ export async function buildApp(opts: BuildOptions = {}) {
   await app.register(categoryRoutes);
   await app.register(transactionRoutes);
   await app.register(reportRoutes);
+  await app.register(reconciliationRoutes);
   await app.register(importRoutes(importService));
   return app;
 }

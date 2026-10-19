@@ -82,3 +82,39 @@ describe('relink', () => {
     ).toBeDefined();
   });
 });
+
+describe('reconciliation API', () => {
+  let t: Awaited<ReturnType<typeof startTestApp>>;
+  beforeAll(async () => {
+    t = await startTestApp();
+    await loadHousehold(t.db, { months: 4, seed: 5, endMonth: '2026-04', excludeByTag: false });
+    await relink(t.db);
+  }, 180_000);
+  afterAll(async () => {
+    await t.stop();
+  });
+
+  it('lists settlements and transfers; unlinking a transfer survives relink', async () => {
+    const before = (
+      await t.app.inject({ method: 'GET', url: '/reconciliation', headers: t.auth })
+    ).json();
+    expect(before.settlements.length).toBeGreaterThan(0);
+    expect(before.transfers.length).toBeGreaterThan(0);
+    const link = before.transfers[0];
+    const del = await t.app.inject({
+      method: 'DELETE',
+      url: `/reconciliation/transfers/${link.linkId}`,
+      headers: t.auth,
+    });
+    expect(del.statusCode).toBe(200);
+    await t.app.inject({ method: 'POST', url: '/reconciliation/relink', headers: t.auth });
+    const after = (
+      await t.app.inject({ method: 'GET', url: '/reconciliation', headers: t.auth })
+    ).json();
+    expect(after.transfers.length).toBe(before.transfers.length - 1);
+    const leg = await t.db.query.transactions.findFirst({
+      where: eq(schema.transactions.id, link.from.txnId),
+    });
+    expect(leg?.excludeReason).toBeNull();
+  });
+});
