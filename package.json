@@ -16,8 +16,8 @@
     "format:check": "prettier --check .",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
-    "test:unit": "vitest run --project unit",
-    "test:integration": "vitest run --project integration",
+    "test:unit": "vitest run --project domain --project shared --project file-parsers --project fixtures --project web --project mcp-server",
+    "test:integration": "vitest run --project db --project api --project sync-worker",
     "db:generate": "pnpm --filter @pinkas/db generate",
     "db:migrate": "pnpm --filter @pinkas/db migrate",
     "seed": "pnpm --filter @pinkas/db seed",
@@ -27,20 +27,21 @@
   "devDependencies": {
     "@commitlint/cli": "^21.2.3",
     "@commitlint/config-conventional": "^21.2.3",
+    "@eslint/js": "^10.0.0",
+    "@types/libsodium-wrappers": "^0.7.14",
     "@types/node": "^24.0.0",
     "@vitest/coverage-v8": "^5.0.4",
     "eslint": "^10.12.0",
     "husky": "^9.1.7",
+    "libsodium-wrappers": "0.8.4",
     "lint-staged": "^17.6.0",
     "prettier": "^3.9.10",
     "tsx": "^4.23.15",
     "turbo": "^2.11.8",
     "typescript": "5.9.3",
     "typescript-eslint": "^8.71.2",
-    "vitest": "^5.0.4",
-    "@eslint/js": "^10.0.0",
-    "libsodium-wrappers": "0.8.4",
-    "@types/libsodium-wrappers": "^0.7.14"
+    "vite": "8.3.4",
+    "vitest": "^5.0.4"
   },
   "pnpm": {
     "overrides": {

@@ -5,10 +5,12 @@
   "type": "module",
   "exports": {
     ".": {
+      "source": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
     "./test-db": {
+      "source": "./src/test-db.ts",
       "types": "./dist/test-db.d.ts",
       "import": "./dist/test-db.js"
     }

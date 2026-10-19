@@ -7,5 +7,5 @@
     "noEmit": true,
     "allowImportingTsExtensions": true
   },
-  "include": ["scripts", "eslint.config.js", "vitest.config.ts"]
+  "include": ["scripts", "eslint.config.js", "vitest.config.ts", "vitest.shared.ts"]
 }

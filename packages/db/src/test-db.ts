@@ -45,19 +45,26 @@ export async function startTestDb(): Promise<TestDb> {
     pool,
     async asRole(role) {
       if (!rolesReady) {
-        // Roles are cluster-global; an advisory lock keeps parallel test files from racing on CREATE ROLE.
+        // Roles are cluster-global, but advisory locks are per database: take the lock on the admin database,
+        // which every test file shares, so parallel files on one cluster (CI) never race on CREATE/ALTER ROLE.
+        const lock = await admin.connect();
+        try {
+          await lock.query('SELECT pg_advisory_lock(7183)');
+          for (const r of ROLES) {
+            const exists = await lock.query('SELECT 1 FROM pg_roles WHERE rolname = $1', [r]);
+            if (exists.rowCount === 0)
+              await lock.query(`CREATE ROLE ${r} LOGIN PASSWORD '${ROLE_PASSWORD}'`);
+          }
+          await lock.query('ALTER ROLE pinkas_readonly SET default_transaction_read_only = on');
+        } finally {
+          await lock.query('SELECT pg_advisory_unlock(7183)');
+          lock.release();
+        }
+        // Grants live in this database's catalogs, so they need no cross-file lock.
         const client = await pool.connect();
         try {
-          await client.query('SELECT pg_advisory_lock(7183)');
-          for (const r of ROLES) {
-            const exists = await client.query('SELECT 1 FROM pg_roles WHERE rolname = $1', [r]);
-            if (exists.rowCount === 0)
-              await client.query(`CREATE ROLE ${r} LOGIN PASSWORD '${ROLE_PASSWORD}'`);
-          }
-          await client.query('ALTER ROLE pinkas_readonly SET default_transaction_read_only = on');
           await applyGrants(client);
         } finally {
-          await client.query('SELECT pg_advisory_unlock(7183)');
           client.release();
         }
         rolesReady = true;
@@ -70,11 +77,28 @@ export async function startTestDb(): Promise<TestDb> {
       return rolePool;
     },
     async stop() {
-      await Promise.all(rolePools.map((p) => p.end()));
-      await pool.end();
-      await admin.query(`DROP DATABASE ${dbName} WITH (FORCE)`);
-      await admin.end();
+      await Promise.all([...rolePools, pool].map(closePool));
+      // No FORCE: a connection still open here is a leak, and the DROP should fail loudly.
+      await admin.query(`DROP DATABASE ${dbName}`);
+      await closePool(admin);
       await container?.stop();
     },
   };
+}
+
+/**
+ * pg-pool's end() resolves as soon as its client list is empty, before the clients' sockets close. Dropping the
+ * database or stopping the container in that window terminates the backends, and the half-closed clients
+ * raise unhandled 57P01 errors. Wait for each client's own 'remove', emitted after its socket ends.
+ */
+async function closePool(pool: pg.Pool): Promise<void> {
+  let left = pool.totalCount;
+  const closed = new Promise<void>((resolve) => {
+    if (left === 0) resolve();
+    pool.on('remove', () => {
+      if (--left === 0) resolve();
+    });
+  });
+  await pool.end();
+  await closed;
 }

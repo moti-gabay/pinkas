@@ -1,2 +1,6 @@
 import { defineProject } from 'vitest/config';
-export default defineProject({ test: { name: 'file-parsers', include: ['src/**/*.test.ts'] } });
+import { sourceConditions } from '../../vitest.shared.js';
+export default defineProject({
+  ...sourceConditions,
+  test: { name: 'file-parsers', include: ['src/**/*.test.ts'] },
+});
