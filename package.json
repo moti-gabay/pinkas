@@ -10,8 +10,9 @@
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
-    "lint": "eslint . --max-warnings 0",
-    "lint:fix": "eslint . --fix",
+    "build:packages": "turbo run build --filter='./packages/*' --ui=stream --output-logs=errors-only",
+    "lint": "pnpm build:packages && eslint . --max-warnings 0",
+    "lint:fix": "pnpm build:packages && eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "turbo run typecheck",
