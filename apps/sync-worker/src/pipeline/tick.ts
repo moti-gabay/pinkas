@@ -2,14 +2,16 @@
  * One scheduler tick: run queued manual requests, then fire scheduled sources whose cron is due.
  *
  * No-retry guarantee: nothing here re-runs a failed sync. A scheduled source fires at most once per cron
- * occurrence (`lastScheduled`), disabled sources are not selected, and a queued run for a disabled source
+ * occurrence (`lastScheduled`), disabled sources and sources still carrying a login-class error are not
+ * selected (the second check holds even if `enabled` was flipped outside the API), and a queued run for a disabled source
  * is closed as DISABLED by syncSource without calling the scraper. A crash in one sync is logged and the
  * tick moves on; the next tick starts from the database state, where a login failure has already
  * disabled the source.
  */
 import { schema } from '@pinkas/db';
+import { loginClassErrors } from '@pinkas/shared';
 import { Cron } from 'croner';
-import { and, asc, eq } from 'drizzle-orm';
+import { and, asc, eq, isNull, notInArray, or } from 'drizzle-orm';
 import { syncSource, type SyncDeps } from './sync-source.js';
 
 export const DEFAULT_CRON = '30 6 * * *';
@@ -50,7 +52,16 @@ export async function runTick(
   const sources = await db
     .select()
     .from(schema.sources)
-    .where(and(eq(schema.sources.kind, 'scraper'), eq(schema.sources.enabled, true)));
+    .where(
+      and(
+        eq(schema.sources.kind, 'scraper'),
+        eq(schema.sources.enabled, true),
+        or(
+          isNull(schema.sources.lastErrorType),
+          notInArray(schema.sources.lastErrorType, [...loginClassErrors]),
+        ),
+      ),
+    );
   for (const s of sources) {
     const expr = s.scheduleCron ?? DEFAULT_CRON;
     let occurrence: Date | null = null;

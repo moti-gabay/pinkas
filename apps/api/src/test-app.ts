@@ -35,6 +35,7 @@ export async function startTestApp() {
     app,
     db: t.db,
     pool: t.pool,
+    asRole: t.asRole.bind(t),
     auth,
     async stop() {
       await app.close();

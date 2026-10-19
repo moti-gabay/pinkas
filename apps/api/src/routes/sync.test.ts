@@ -1,4 +1,5 @@
-import { schema } from '@pinkas/db';
+import { createDb, recordSourceOutcome, schema, type Db } from '@pinkas/db';
+import { eq } from 'drizzle-orm';
 import sodium from 'libsodium-wrappers';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { startTestApp } from '../test-app.js';
@@ -73,5 +74,86 @@ describe('scraper sources and sync requests', () => {
     });
     expect(runs.json()).toHaveLength(1);
     expect(runs.json()[0]).toMatchObject({ status: 'queued', trigger: 'manual' });
+  });
+
+  describe('re-enabling a source disabled by a login failure', () => {
+    // Worker writes go through the worker's own DB function and role, exactly as in production.
+    let worker: Db;
+    beforeAll(async () => {
+      worker = createDb(await t.asRole('pinkas_worker'));
+    });
+
+    async function loginDisabledSource(errorType: string) {
+      const res = await t.app.inject({
+        method: 'POST',
+        url: '/sources/scraper',
+        headers: t.auth,
+        payload: {
+          companyId: 'max',
+          displayName: `max ${errorType}`,
+          credentials: { username: 'u', password: 'wrong' },
+        },
+      });
+      const id = res.json<{ id: string }>().id;
+      // What syncSource does on a login-class result.
+      await worker.update(schema.sources).set({ enabled: false }).where(eq(schema.sources.id, id));
+      await recordSourceOutcome(worker, id, errorType);
+      return id;
+    }
+    const patch = (id: string, payload: object) =>
+      t.app.inject({ method: 'PATCH', url: `/sources/${id}`, headers: t.auth, payload });
+    const source = async (id: string) =>
+      t.db.query.sources.findFirst({ where: eq(schema.sources.id, id) });
+
+    it('PATCH {enabled:true} is refused with 409 and the source stays disabled', async () => {
+      const id = await loginDisabledSource('INVALID_PASSWORD');
+      expect((await patch(id, { enabled: true })).statusCode).toBe(409);
+      expect((await patch(id, { displayName: 'renamed', enabled: true })).statusCode).toBe(409);
+      expect(await source(id)).toMatchObject({
+        enabled: false,
+        displayName: 'max INVALID_PASSWORD',
+      });
+    });
+
+    it('stays 409 after a queued run hits the disabled source (DISABLED / NO_CREDENTIALS)', async () => {
+      const id = await loginDisabledSource('ACCOUNT_BLOCKED');
+      // The race: a manual run was queued while the source was still enabled, and the worker closes it later.
+      await recordSourceOutcome(worker, id, 'DISABLED');
+      await recordSourceOutcome(worker, id, 'NO_CREDENTIALS');
+      expect((await source(id))?.lastErrorType).toBe('ACCOUNT_BLOCKED');
+      expect((await patch(id, { enabled: true })).statusCode).toBe(409);
+    });
+
+    it('PUT credentials clears the marker and re-enables the source', async () => {
+      const id = await loginDisabledSource('CHANGE_PASSWORD');
+      const put = await t.app.inject({
+        method: 'PUT',
+        url: `/sources/${id}/credentials`,
+        headers: t.auth,
+        payload: { credentials: { username: 'u', password: 'new-password' } },
+      });
+      expect(put.statusCode).toBe(200);
+      expect(put.json()).toMatchObject({ enabled: true, lastErrorType: null });
+      expect((await patch(id, { enabled: false })).statusCode).toBe(200);
+      expect((await patch(id, { enabled: true })).statusCode).toBe(200);
+    });
+
+    it('a non-login failure does not block a plain re-enable', async () => {
+      const res = await t.app.inject({
+        method: 'POST',
+        url: '/sources/scraper',
+        headers: t.auth,
+        payload: {
+          companyId: 'visaCal',
+          displayName: 'cal',
+          credentials: { username: 'u', password: 'p' },
+        },
+      });
+      const id = res.json<{ id: string }>().id;
+      await recordSourceOutcome(worker, id, 'TIMEOUT');
+      expect((await patch(id, { enabled: false })).statusCode).toBe(200);
+      await recordSourceOutcome(worker, id, 'DISABLED');
+      expect((await patch(id, { enabled: true })).statusCode).toBe(200);
+    });
   });
 });

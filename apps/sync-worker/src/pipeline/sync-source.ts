@@ -2,7 +2,7 @@
  * One sync of one source: decrypt → scrape → map → upsert accounts → ingest → relink → record the run.
  * Login-class failures disable the source and are never retried (repeated failed logins lock bank accounts).
  */
-import { ingest, relink, schema, type Db } from '@pinkas/db';
+import { ingest, recordSourceOutcome, relink, schema, type Db } from '@pinkas/db';
 import { loginClassErrors, type ScraperErrorType } from '@pinkas/shared';
 import { and, eq } from 'drizzle-orm';
 import type pino from 'pino';
@@ -84,17 +84,7 @@ export async function syncSource(
       .update(schema.syncRuns)
       .set({ status, finishedAt: new Date(), durationMs, errorType: errorType ?? null, ...fields })
       .where(eq(schema.syncRuns.id, runId));
-    if (status === 'success') {
-      await db
-        .update(schema.sources)
-        .set({ lastSuccessAt: new Date(), lastErrorType: null, lastErrorAt: null })
-        .where(eq(schema.sources.id, sourceId));
-    } else {
-      await db
-        .update(schema.sources)
-        .set({ lastErrorType: errorType ?? 'GENERIC', lastErrorAt: new Date() })
-        .where(eq(schema.sources.id, sourceId));
-    }
+    await recordSourceOutcome(db, sourceId, status === 'success' ? null : (errorType ?? 'GENERIC'));
     runLog.info({ status, errorType, durationMs, ...fields }, 'sync finished');
     return {
       runId,

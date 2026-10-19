@@ -82,6 +82,20 @@ describe('runTick', () => {
     ).toHaveLength(1);
   });
 
+  it('a source re-enabled outside the API but still carrying a login-class error is never scheduled', async () => {
+    await clear();
+    const id = await makeSource('p');
+    await t.pool.query(
+      "UPDATE sources SET enabled = true, last_error_type = 'INVALID_PASSWORD' WHERE id = $1",
+      [id],
+    );
+    expect(await runTick(deps, newTickState(), new Date('2026-10-14T06:30:05Z'))).toEqual({
+      manual: 0,
+      scheduled: 0,
+    });
+    expect(scrape).not.toHaveBeenCalled();
+  });
+
   it('a queued manual run for a disabled source is closed as DISABLED without touching the bank', async () => {
     await clear();
     const id = await makeSource('fail:ACCOUNT_BLOCKED');
@@ -99,6 +113,10 @@ describe('runTick', () => {
     const runs = await t.db.select().from(schema.syncRuns).where(eq(schema.syncRuns.sourceId, id));
     expect(runs.map((r) => r.errorType).sort()).toEqual(['ACCOUNT_BLOCKED', 'DISABLED']);
     expect(runs.some((r) => r.status === 'queued')).toBe(false);
+    // The DISABLED run must not erase the login marker the API uses to refuse a plain re-enable.
+    expect(
+      (await t.db.query.sources.findFirst({ where: eq(schema.sources.id, id) }))?.lastErrorType,
+    ).toBe('ACCOUNT_BLOCKED');
   });
 
   it('a crashing sync does not stop the tick, and is not re-run for the same cron occurrence', async () => {

@@ -2,6 +2,8 @@ import { schema } from '@pinkas/db';
 import {
   PinkasError,
   createScraperSourceBody,
+  loginClassErrors,
+  type ScraperErrorType,
   credentialsBody,
   sourceDto,
   supportedCompanies,
@@ -133,6 +135,22 @@ export const syncRoutes: FastifyPluginAsyncZod = async (app) => {
       },
     },
     async (req) => {
+      if (req.body.enabled === true) {
+        // A source disabled by a login-class failure can only come back by re-entering credentials,
+        // otherwise a toggle would cause another failed login against the bank.
+        const current = await app.db.query.sources.findFirst({
+          where: eq(schema.sources.id, req.params.id),
+        });
+        if (
+          current?.lastErrorType &&
+          loginClassErrors.has(current.lastErrorType as ScraperErrorType)
+        ) {
+          throw new PinkasError(
+            'CONFLICT',
+            'source was disabled by a login failure; re-enter credentials',
+          );
+        }
+      }
       const [updated] = await app.db
         .update(schema.sources)
         .set(req.body)
