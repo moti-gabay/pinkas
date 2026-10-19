@@ -10,12 +10,9 @@ coverage/
 *.age
 docker/secrets/*
 !docker/secrets/.gitkeep
-data/samples/*
-!data/samples/.gitkeep
-data/uploads/*
-!data/uploads/.gitkeep
-data/backups/*
-!data/backups/.gitkeep
+data/**
+!data/**/
+!data/**/.gitkeep
 playwright-report/
 test-results/
 .DS_Store

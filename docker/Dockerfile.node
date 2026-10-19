@@ -1,6 +1,9 @@
 # Shared builder for api / mcp-server (worker has its own Dockerfile because of Chromium).
-FROM node:24-bookworm-slim AS base
-ENV PNPM_HOME=/pnpm PATH=/pnpm:$PATH PUPPETEER_SKIP_DOWNLOAD=1
+# Base images are pinned by digest; bump the tag and digest together.
+FROM node:24-bookworm-slim@sha256:a5f4366e834695d5f363b920c104953a535d3a9864d1bdf74566a0ebe01daee5 AS node
+
+FROM node AS base
+ENV CI=true PNPM_HOME=/pnpm PATH=/pnpm:$PATH PUPPETEER_SKIP_DOWNLOAD=1
 RUN corepack enable && corepack prepare pnpm@10.33.0 --activate
 WORKDIR /app
 
@@ -22,12 +25,16 @@ FROM deps AS build
 COPY . .
 ARG APP
 RUN pnpm turbo run build --filter=@pinkas/${APP}...
+# A self-contained copy of the app: its dist, its production dependencies, workspace packages included.
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm --filter=@pinkas/${APP} deploy --prod --legacy /out
 
-FROM base AS runtime
+# No pnpm, no dev dependencies, no workspace sources. Code is root-owned and read-only for the `node` user.
+FROM node AS runtime
 ARG APP
 ENV NODE_ENV=production
-RUN groupadd -r pinkas && useradd -r -g pinkas -d /app pinkas
-COPY --from=build --chown=pinkas:pinkas /app /app
-USER pinkas
-WORKDIR /app/apps/${APP}
+COPY --from=build /out /app
+# The api's only writable path besides /tmp. A new named volume mounted here inherits this ownership.
+RUN if [ "$APP" = api ]; then mkdir -p /data/uploads && chown node:node /data/uploads; fi
+USER node
+WORKDIR /app
 CMD ["node", "dist/server.js"]

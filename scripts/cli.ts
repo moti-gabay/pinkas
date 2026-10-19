@@ -46,7 +46,8 @@ function initSecrets(): void {
       console.log(`exists: ${file}`);
       continue;
     }
-    writeFileSync(file, randomBytes(24).toString('base64url'), { mode: 0o600 });
+    // 0644: the postgres init script reads these as the container's postgres user. The directory is gitignored.
+    writeFileSync(file, randomBytes(24).toString('base64url'), { mode: 0o644 });
     console.log(`created: ${file}`);
   }
 }

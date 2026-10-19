@@ -1,10 +1,17 @@
-FROM node:24-bookworm-slim AS base
-ENV PNPM_HOME=/pnpm PATH=/pnpm:$PATH PUPPETEER_SKIP_DOWNLOAD=1 PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
-RUN corepack enable && corepack prepare pnpm@10.33.0 --activate
-# System Chromium + fonts (Hebrew rendering matters for some bank pages). No npm-downloaded browser.
+# Base images are pinned by digest; bump the tag and digest together.
+FROM node:24-bookworm-slim@sha256:a5f4366e834695d5f363b920c104953a535d3a9864d1bdf74566a0ebe01daee5 AS node
+
+# Runtime base: system Chromium + fonts (Hebrew rendering matters for some bank pages). No npm-downloaded browser.
+FROM node AS chromium
+ENV PUPPETEER_SKIP_DOWNLOAD=1 PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 RUN apt-get update && apt-get install -y --no-install-recommends \
-      chromium fonts-noto fonts-noto-color-emoji fonts-dejavu ca-certificates tzdata \
+      chromium fonts-noto-core fonts-noto-color-emoji fonts-dejavu ca-certificates tzdata \
     && rm -rf /var/lib/apt/lists/*
+
+# Build base: pnpm only, no Chromium.
+FROM node AS base
+ENV CI=true PNPM_HOME=/pnpm PATH=/pnpm:$PATH PUPPETEER_SKIP_DOWNLOAD=1
+RUN corepack enable && corepack prepare pnpm@10.33.0 --activate
 WORKDIR /app
 
 FROM base AS deps
@@ -24,11 +31,13 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 FROM deps AS build
 COPY . .
 RUN pnpm turbo run build --filter=@pinkas/sync-worker...
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm --filter=@pinkas/sync-worker deploy --prod --legacy /out
 
-FROM base AS runtime
-ENV NODE_ENV=production TZ=Asia/Jerusalem
-RUN groupadd -r pinkas && useradd -r -g pinkas -d /app pinkas
-COPY --from=build --chown=pinkas:pinkas /app /app
-USER pinkas
-WORKDIR /app/apps/sync-worker
+# Code is root-owned and read-only for the `node` user. HOME=/tmp: with a read-only root filesystem Chromium's
+# profile and crashpad database must live on the tmpfs, or launch fails ("chrome_crashpad_handler: --database is required").
+FROM chromium AS runtime
+ENV NODE_ENV=production TZ=Asia/Jerusalem HOME=/tmp
+COPY --from=build /out /app
+USER node
+WORKDIR /app
 CMD ["node", "dist/main.js"]

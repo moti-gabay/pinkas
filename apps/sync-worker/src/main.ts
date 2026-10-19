@@ -2,6 +2,7 @@
  * Worker loop: every tick, claim queued manual runs and fire scheduled sources whose cron is due.
  * One scrape at a time (one Chromium). A failed login never schedules a retry.
  */
+import { writeFileSync } from 'node:fs';
 import { createDb, createPool } from '@pinkas/db';
 import { pino } from 'pino';
 import { config } from './config.js';
@@ -45,11 +46,20 @@ if (config.SCRAPER_MOCK === '1')
 let busy = false;
 const state = newTickState();
 
+/** Liveness for the compose healthcheck: touched after every completed tick, and while a scrape is running. */
+const beat = () => {
+  writeFileSync(config.HEARTBEAT_FILE, new Date().toISOString());
+};
+
 async function tick(): Promise<void> {
-  if (busy) return; // one scrape at a time
+  if (busy) {
+    beat(); // one scrape at a time; a long scrape is still alive
+    return;
+  }
   busy = true;
   try {
     await runTick(deps, state);
+    beat(); // only after the database answered, so a lost DB turns the container unhealthy
   } finally {
     busy = false;
   }

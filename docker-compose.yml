@@ -5,7 +5,7 @@ x-logging: &logging
 
 services:
   db:
-    image: postgres:17-bookworm
+    image: postgres:17-bookworm@sha256:3645570cccdfa447589da9f57dd740faa29b30938e861289a5574b6ca6b03826
     <<: *logging
     environment:
       POSTGRES_DB: pinkas
@@ -33,9 +33,11 @@ services:
     # No `ports:` on purpose. The DB is reachable only inside the compose network.
 
   migrate:
-    build: { context: ., dockerfile: docker/Dockerfile.node, args: { APP: api } }
+    # Same image as api (built by the api service), so it is built and exported once.
+    image: pinkas-api:local
+    pull_policy: never
     <<: *logging
-    command: ['node', '../../packages/db/dist/migrate.js', 'up']
+    command: ['node', 'node_modules/@pinkas/db/dist/migrate.js', 'up']
     env_file: .env
     environment:
       DATABASE_URL: postgres://pinkas_migrator@db:5432/pinkas
@@ -46,6 +48,7 @@ services:
 
   api:
     build: { context: ., dockerfile: docker/Dockerfile.node, args: { APP: api } }
+    image: pinkas-api:local
     <<: *logging
     env_file: .env
     environment:
@@ -62,6 +65,18 @@ services:
     read_only: true
     tmpfs: [/tmp]
     security_opt: [no-new-privileges:true]
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:3000/healthz').then((r) => process.exit(r.ok ? 0 : 1), () => process.exit(1))",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
 
   web:
     build: { context: ., dockerfile: docker/Dockerfile.web }
@@ -70,6 +85,12 @@ services:
     networks: [frontend]
     ports: ['127.0.0.1:5173:80']
     security_opt: [no-new-privileges:true]
+    healthcheck:
+      test: ['CMD', 'wget', '-q', '--spider', 'http://127.0.0.1/']
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
   sync-worker:
     build: { context: ., dockerfile: docker/Dockerfile.worker }
@@ -78,7 +99,7 @@ services:
     environment:
       DATABASE_URL: postgres://pinkas_worker@db:5432/pinkas
       PGPASSWORD_FILE: /run/secrets/pg_worker_password
-      CREDENTIALS_PRIVATE_KEY_FILE: /run/secrets/worker.key
+      CREDENTIALS_PRIVATE_KEY_FILE: /run/secrets/worker_key
     secrets: [pg_worker_password, worker_key]
     depends_on: { migrate: { condition: service_completed_successfully } }
     networks: [backend, worker-egress]
@@ -87,6 +108,19 @@ services:
     tmpfs: [/tmp]
     cap_drop: [ALL]
     security_opt: [no-new-privileges:true]
+    # Heartbeat file on the tmpfs: written after every completed tick (15s) and while a scrape runs.
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "process.exit(Date.now() - require('fs').statSync('/tmp/sync-worker.heartbeat').mtimeMs < 90000 ? 0 : 1)",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
 
   mcp-server:
     build: { context: ., dockerfile: docker/Dockerfile.node, args: { APP: mcp-server } }
@@ -99,10 +133,24 @@ services:
       PGPASSWORD_FILE: /run/secrets/pg_readonly_password
     secrets: [pg_readonly_password]
     depends_on: { migrate: { condition: service_completed_successfully } }
+    # TODO(phase 3): `backend` is internal, so this port is not published to the host yet. Attach a
+    # non-internal network too when the MCP endpoint lands (plan, Phase 3 item 5).
     networks: [backend]
     ports: ['127.0.0.1:3100:3100']
     read_only: true
     security_opt: [no-new-privileges:true]
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:3100/healthz').then((r) => process.exit(r.ok ? 0 : 1), () => process.exit(1))",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
 
   backup:
     build: { context: ./apps/backup }
