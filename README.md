@@ -19,12 +19,13 @@ The sync worker calls exactly one library function, `createScraper(...).scrape(c
 
 ## Setup (WSL / Ubuntu)
 
-Prerequisites: Docker Desktop with WSL integration, Node 24, pnpm 10 (`corepack enable`).
+Prerequisites: Docker Desktop with WSL integration, Node 24, pnpm 10 (`corepack enable`), `age` (`sudo apt-get install age`).
 
 ```bash
 git clone <your-repo> pinkas && cd pinkas
 pnpm install
 pnpm pinkas keygen            # creates ~/.pinkas/worker.key (private) and prints CREDENTIALS_PUBLIC_KEY
+pnpm pinkas backup-keygen     # creates ~/.pinkas/backup.key (age identity) and backup.pub: back up backup.key now
 pnpm pinkas init-secrets      # generates docker/secrets/* (DB role passwords)
 cp .env.example .env          # fill SESSION_SECRET, CREDENTIALS_PUBLIC_KEY, MCP_TOKEN, ANTHROPIC_API_KEY
 docker compose up -d --build
@@ -47,9 +48,20 @@ Drop redacted exports from your banks in `data/samples/` (gitignored). Bank-spec
 
 ## Backup & restore
 
-See `docs/backup-restore.md`. Backups are `pg_dump` piped through `age`; the restore drill script verifies a backup can actually be restored.
+```bash
+pnpm pinkas backup                        # encrypted, verified dump → data/backups/ (+ copy to BACKUP_COPY_DIR)
+pnpm pinkas restore data/backups/<file>   # into a NEW scratch database only, prints row counts
+```
+
+> **Store `~/.pinkas/backup.key` in your password manager.** Every backup is encrypted to it; if the laptop is lost
+> without a copy of that key, the backups are unreadable. `worker.key` needs no backup: losing it only means
+> re-entering bank credentials after `pnpm pinkas keygen`.
+
+Details, including the off-machine copy and what restore refuses, in `docs/backup-restore.md`.
 
 ## Adding a source
+
+Before the first real bank sync, go through `docs/first-real-sync.md`.
 
 See `docs/adding-a-source.md` (scraper companies in `packages/shared/src/scrapers.ts`, file presets in `packages/file-parsers/src/presets/`).
 

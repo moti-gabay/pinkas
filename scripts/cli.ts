@@ -2,12 +2,16 @@
  * `pnpm pinkas <command>` — local operator commands.
  *   keygen        create ~/.pinkas/worker.key (X25519 private) and print the public key for .env
  *   init-secrets  generate docker/secrets/* role passwords (idempotent: never overwrites)
+ *   backup-keygen create ~/.pinkas/backup.key (age identity) and backup.pub (recipient; also a compose secret)
+ *   backup        encrypted pg_dump to data/backups/, verified; copied to BACKUP_COPY_DIR when set
+ *   restore FILE [--into DB]  restore into a new scratch database (never the live one) and print row counts
  */
 import { randomBytes } from 'node:crypto';
 import { chmodSync, existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import sodium from 'libsodium-wrappers';
+import { backup, backupKeygen, loadDotEnv, restore } from './backup.js';
 
 const keyDir = process.env['PINKAS_KEY_DIR'] ?? join(homedir(), '.pinkas');
 
@@ -60,7 +64,21 @@ switch (cmd) {
   case 'init-secrets':
     initSecrets();
     break;
+  case 'backup-keygen':
+    backupKeygen(keyDir);
+    break;
+  case 'backup':
+    loadDotEnv();
+    await backup(keyDir);
+    break;
+  case 'restore': {
+    const intoAt = process.argv.indexOf('--into');
+    await restore(keyDir, process.argv[3], intoAt > 0 ? process.argv[intoAt + 1] : undefined);
+    break;
+  }
   default:
-    console.error('usage: pnpm pinkas <keygen|init-secrets>');
+    console.error(
+      'usage: pnpm pinkas <keygen|init-secrets|backup-keygen|backup|restore FILE [--into DB]>',
+    );
     process.exit(1);
 }
