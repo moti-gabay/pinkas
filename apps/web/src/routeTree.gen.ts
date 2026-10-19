@@ -8,114 +8,170 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from './routes/__root';
-import { Route as IndexRouteImport } from './routes/index';
-import { Route as AccountsRouteImport } from './routes/accounts';
-import { Route as ImportRouteImport } from './routes/import';
-import { Route as SettingsRouteImport } from './routes/settings';
-import { Route as TransactionsRouteImport } from './routes/transactions';
+import { Route as rootRouteImport } from './routes/__root'
+import { Route as IndexRouteImport } from './routes/index'
+import { Route as AccountsRouteImport } from './routes/accounts'
+import { Route as ImportRouteImport } from './routes/import'
+import { Route as ReconciliationRouteImport } from './routes/reconciliation'
+import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as SyncRouteImport } from './routes/sync'
+import { Route as TransactionsRouteImport } from './routes/transactions'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const AccountsRoute = AccountsRouteImport.update({
   id: '/accounts',
   path: '/accounts',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const ImportRoute = ImportRouteImport.update({
   id: '/import',
   path: '/import',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
+const ReconciliationRoute = ReconciliationRouteImport.update({
+  id: '/reconciliation',
+  path: '/reconciliation',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
+const SyncRoute = SyncRouteImport.update({
+  id: '/sync',
+  path: '/sync',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TransactionsRoute = TransactionsRouteImport.update({
   id: '/transactions',
   path: '/transactions',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute;
-  '/accounts': typeof AccountsRoute;
-  '/import': typeof ImportRoute;
-  '/settings': typeof SettingsRoute;
-  '/transactions': typeof TransactionsRoute;
+  '/': typeof IndexRoute
+  '/accounts': typeof AccountsRoute
+  '/import': typeof ImportRoute
+  '/reconciliation': typeof ReconciliationRoute
+  '/settings': typeof SettingsRoute
+  '/sync': typeof SyncRoute
+  '/transactions': typeof TransactionsRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute;
-  '/accounts': typeof AccountsRoute;
-  '/import': typeof ImportRoute;
-  '/settings': typeof SettingsRoute;
-  '/transactions': typeof TransactionsRoute;
+  '/': typeof IndexRoute
+  '/accounts': typeof AccountsRoute
+  '/import': typeof ImportRoute
+  '/reconciliation': typeof ReconciliationRoute
+  '/settings': typeof SettingsRoute
+  '/sync': typeof SyncRoute
+  '/transactions': typeof TransactionsRoute
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport;
-  '/': typeof IndexRoute;
-  '/accounts': typeof AccountsRoute;
-  '/import': typeof ImportRoute;
-  '/settings': typeof SettingsRoute;
-  '/transactions': typeof TransactionsRoute;
+  __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
+  '/accounts': typeof AccountsRoute
+  '/import': typeof ImportRoute
+  '/reconciliation': typeof ReconciliationRoute
+  '/settings': typeof SettingsRoute
+  '/sync': typeof SyncRoute
+  '/transactions': typeof TransactionsRoute
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath;
-  fullPaths: '/' | '/accounts' | '/import' | '/settings' | '/transactions';
-  fileRoutesByTo: FileRoutesByTo;
-  to: '/' | '/accounts' | '/import' | '/settings' | '/transactions';
-  id: '__root__' | '/' | '/accounts' | '/import' | '/settings' | '/transactions';
-  fileRoutesById: FileRoutesById;
+  fileRoutesByFullPath: FileRoutesByFullPath
+  fullPaths:
+    | '/'
+    | '/accounts'
+    | '/import'
+    | '/reconciliation'
+    | '/settings'
+    | '/sync'
+    | '/transactions'
+  fileRoutesByTo: FileRoutesByTo
+  to:
+    | '/'
+    | '/accounts'
+    | '/import'
+    | '/reconciliation'
+    | '/settings'
+    | '/sync'
+    | '/transactions'
+  id:
+    | '__root__'
+    | '/'
+    | '/accounts'
+    | '/import'
+    | '/reconciliation'
+    | '/settings'
+    | '/sync'
+    | '/transactions'
+  fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute;
-  AccountsRoute: typeof AccountsRoute;
-  ImportRoute: typeof ImportRoute;
-  SettingsRoute: typeof SettingsRoute;
-  TransactionsRoute: typeof TransactionsRoute;
+  IndexRoute: typeof IndexRoute
+  AccountsRoute: typeof AccountsRoute
+  ImportRoute: typeof ImportRoute
+  ReconciliationRoute: typeof ReconciliationRoute
+  SettingsRoute: typeof SettingsRoute
+  SyncRoute: typeof SyncRoute
+  TransactionsRoute: typeof TransactionsRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
     '/': {
-      id: '/';
-      path: '/';
-      fullPath: '/';
-      preLoaderRoute: typeof IndexRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/accounts': {
-      id: '/accounts';
-      path: '/accounts';
-      fullPath: '/accounts';
-      preLoaderRoute: typeof AccountsRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+      id: '/accounts'
+      path: '/accounts'
+      fullPath: '/accounts'
+      preLoaderRoute: typeof AccountsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/import': {
-      id: '/import';
-      path: '/import';
-      fullPath: '/import';
-      preLoaderRoute: typeof ImportRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+      id: '/import'
+      path: '/import'
+      fullPath: '/import'
+      preLoaderRoute: typeof ImportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reconciliation': {
+      id: '/reconciliation'
+      path: '/reconciliation'
+      fullPath: '/reconciliation'
+      preLoaderRoute: typeof ReconciliationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/settings': {
-      id: '/settings';
-      path: '/settings';
-      fullPath: '/settings';
-      preLoaderRoute: typeof SettingsRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sync': {
+      id: '/sync'
+      path: '/sync'
+      fullPath: '/sync'
+      preLoaderRoute: typeof SyncRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/transactions': {
-      id: '/transactions';
-      path: '/transactions';
-      fullPath: '/transactions';
-      preLoaderRoute: typeof TransactionsRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+      id: '/transactions'
+      path: '/transactions'
+      fullPath: '/transactions'
+      preLoaderRoute: typeof TransactionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -123,9 +179,11 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AccountsRoute: AccountsRoute,
   ImportRoute: ImportRoute,
+  ReconciliationRoute: ReconciliationRoute,
   SettingsRoute: SettingsRoute,
+  SyncRoute: SyncRoute,
   TransactionsRoute: TransactionsRoute,
-};
+}
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>();
+  ._addFileTypes<FileRouteTypes>()

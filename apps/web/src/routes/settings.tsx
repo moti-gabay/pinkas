@@ -13,6 +13,7 @@ import {
   useLogout,
   useReapplyRules,
   useRules,
+  useUpdateRule,
 } from '../lib/queries';
 
 export const Route = createFileRoute('/settings')({ component: SettingsPage });
@@ -37,6 +38,7 @@ function SettingsPage() {
   const rules = useRules();
   const categories = useCategories();
   const del = useDeleteRule();
+  const update = useUpdateRule();
   const reapply = useReapplyRules();
   const logout = useLogout();
   const toast = useToast();
@@ -68,7 +70,7 @@ function SettingsPage() {
           </button>
         </div>
         {(rules.isPending || categories.isPending) && <Spinner />}
-        <ErrorNote error={rules.error ?? del.error ?? reapply.error} />
+        <ErrorNote error={rules.error ?? del.error ?? update.error ?? reapply.error} />
         {rules.data && (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -102,7 +104,15 @@ function SettingsPage() {
                     </td>
                     <td className={`${td} num`}>{r.hitCount}</td>
                     <td className={td}>
-                      <input type="checkbox" checked={r.enabled} readOnly aria-label="פעיל" />
+                      <input
+                        type="checkbox"
+                        checked={r.enabled}
+                        disabled={update.isPending}
+                        onChange={(e) => {
+                          update.mutate({ id: r.id, enabled: e.target.checked });
+                        }}
+                        aria-label="פעיל"
+                      />
                     </td>
                     <td className={td}>
                       <button

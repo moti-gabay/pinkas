@@ -10,6 +10,8 @@ const nav = [
   { to: '/transactions', label: 'תנועות' },
   { to: '/import', label: 'ייבוא' },
   { to: '/accounts', label: 'חשבונות' },
+  { to: '/sync', label: 'היסטוריית סנכרון' },
+  { to: '/reconciliation', label: 'התאמות' },
   { to: '/settings', label: 'הגדרות' },
 ] as const;
 
