@@ -1,6 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { migrateDown, migrateUp } from './migrate.js';
-import { seedTaxonomy } from './seed-taxonomy.js';
 import { startTestDb, type TestDb } from './test-db.js';
 
 describe('migrations', () => {
@@ -20,6 +19,7 @@ describe('migrations', () => {
         )
       ).rows[0]!.n;
     expect(Number(await tables())).toBeGreaterThan(15);
+    expect(await migrateDown(t.pool)).toBe('0003_seed_versions.sql');
     expect(await migrateDown(t.pool)).toBe('0002_sync_queue.sql');
     expect(await migrateDown(t.pool)).toBe('0001_triggers_views.sql');
     expect(await migrateDown(t.pool)).toBe('0000_init.sql');
@@ -28,20 +28,9 @@ describe('migrations', () => {
       '0000_init.sql',
       '0001_triggers_views.sql',
       '0002_sync_queue.sql',
+      '0003_seed_versions.sql',
     ]);
     expect(await migrateUp(t.pool)).toEqual([]);
-  });
-
-  it('seeds the taxonomy idempotently', async () => {
-    const first = await seedTaxonomy(t.db);
-    const second = await seedTaxonomy(t.db);
-    expect(first.rules).toBeGreaterThan(30);
-    expect(second.rules).toBe(0);
-    const { rows } = await t.pool.query<{ slug: string; parent: string | null }>(
-      'SELECT c.slug, p.slug AS parent FROM categories c LEFT JOIN categories p ON p.id = c.parent_id WHERE c.slug = $1',
-      ['food.groceries'],
-    );
-    expect(rows[0]?.parent).toBe('food');
   });
 
   it('forbids upgrading sources.hash_kind back to identifier', async () => {

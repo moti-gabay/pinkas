@@ -112,6 +112,8 @@ export const categoryRules = pgTable(
     enabled: boolean('enabled').notNull().default(true),
     origin: e.ruleOrigin('origin').notNull().default('user'),
     hitCount: integer('hit_count').notNull().default(0),
+    /** Stable identity of a seed rule ('<slug>:<pattern>'); null for user rules. Lets the seed add only what is missing. */
+    seedKey: text('seed_key').unique(),
     createdAt: now(),
   },
   (t) => [index('category_rules_enabled_priority_idx').on(t.enabled, t.priority)],
@@ -371,6 +373,13 @@ export const settings = pgTable('settings', {
   key: text('key').primaryKey(),
   value: jsonb('value').notNull(),
   updatedAt: updatedAt(),
+});
+
+/** Highest reference-data version applied per seed. Written by `migrate up` only; api/worker/readonly have no access. */
+export const seedVersions = pgTable('seed_versions', {
+  name: text('name').primaryKey(),
+  version: integer('version').notNull(),
+  appliedAt: timestamp('applied_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
 export const sessions = pgTable('sessions', {

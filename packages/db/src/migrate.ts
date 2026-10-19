@@ -1,12 +1,15 @@
 /**
  * Minimal migration runner: applies migrations/NNNN_name.sql in order, records them in schema_migrations,
- * and re-applies grants.sql after each run. `down` reverts the last applied migration using its .down.sql.
+ * re-applies grants.sql and applies any newer taxonomy seed after each run. `down` reverts the last applied
+ * migration using its .down.sql.
  * drizzle-kit only *generates* SQL; it never touches the database.
  */
 import { readdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type pg from 'pg';
+import { createDb } from './client.js';
+import { seedTaxonomy } from './seed-taxonomy.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
 // Works from src (tsx) and dist (node).
@@ -74,6 +77,13 @@ export async function migrateUp(
       log(`applied ${file}`);
     }
     await applyGrants(client, { skipIfRolesMissing: true });
+    // Reference data, still under the migration lock. Versioned and add-only (see seed-taxonomy.ts).
+    const seeded = await seedTaxonomy(createDb(pool));
+    log(
+      seeded.from === seeded.to
+        ? `taxonomy seed v${seeded.to}: up to date`
+        : `taxonomy seed v${seeded.from} → v${seeded.to}: +${seeded.categories} categories, +${seeded.rules} rules`,
+    );
   } finally {
     await client.query('SELECT pg_advisory_unlock(7182)');
     client.release();

@@ -11,6 +11,8 @@ export interface CategoryDef {
   fixed?: boolean;
   icon?: string;
   children?: CategoryDef[];
+  /** Seed version that introduced this item (default 1). New items get the next version; never edit old ones. */
+  since?: number;
 }
 
 export const UNCATEGORIZED_SLUG = 'uncategorized';
@@ -181,8 +183,16 @@ export function flattenTaxonomy(
   return out;
 }
 
+export interface SeedRule {
+  pattern: string;
+  slug: string;
+  fixed?: boolean;
+  /** Seed version that introduced this rule (default 1), as for CategoryDef. */
+  since?: number;
+}
+
 /** Seed rules: pattern (matched against merchant_normalized, `contains`) → slug. Users edit these freely. */
-export const seedRules: readonly { pattern: string; slug: string; fixed?: boolean }[] = [
+export const seedRules: readonly SeedRule[] = [
   { pattern: 'שופרסל', slug: 'food.groceries' },
   { pattern: 'רמי לוי', slug: 'food.groceries' },
   { pattern: 'ויקטורי', slug: 'food.groceries' },
