@@ -1,5 +1,9 @@
-/** Contract tests: the pipeline against synthetic scraper results, never a real bank. */
-import { schema, seedTaxonomy } from '@pinkas/db';
+/**
+ * Contract tests: the pipeline against synthetic scraper results, never a real bank.
+ * The pipeline's DB handle connects as the real `pinkas_worker` role, so a missing or excessive grant fails here.
+ * `t.db` (superuser) is used only to arrange fixtures and assert outcomes.
+ */
+import { createDb, ingest, schema, seedTaxonomy } from '@pinkas/db';
 import { startTestDb, type TestDb } from '@pinkas/db/test-db';
 import { eq } from 'drizzle-orm';
 import sodium from 'libsodium-wrappers';
@@ -32,7 +36,7 @@ describe('syncSource', () => {
     await seedTaxonomy(t.db);
     const kp = sodium.crypto_box_keypair();
     deps = {
-      db: t.db,
+      db: createDb(await t.asRole('pinkas_worker')),
       scrape: vi.fn(mockScrape),
       keypair: { publicKey: kp.publicKey, privateKey: kp.privateKey },
       log: pino({ level: 'silent' }),
@@ -118,6 +122,47 @@ describe('syncSource', () => {
     expect(res).toMatchObject({ status: 'failed', errorType: 'GENERIC' });
     const run = await t.db.query.syncRuns.findFirst({ where: eq(schema.syncRuns.sourceId, id) });
     expect(run?.errorMessage).not.toContain('password=');
+  });
+
+  it('sticky hash-kind downgrade works with the worker role (sync N collides, sync N+1 adds nothing)', async () => {
+    const id = await makeSource('beinleumi', { username: 'u', password: 'p' });
+    const [acc] = await t.db
+      .insert(schema.accounts)
+      .values({
+        sourceId: id,
+        externalId: '99-1',
+        maskedLabel: '****0001',
+        type: 'checking',
+        displayName: 'x',
+      })
+      .returning();
+    const row = (ext: string, date: string, amount: number) => ({
+      accountId: acc!.id,
+      origin: 'scraper' as const,
+      externalIdentifier: ext,
+      txnDate: date,
+      processedDate: undefined,
+      chargedAmountAgorot: amount,
+      originalAmountMinor: undefined,
+      originalCurrency: undefined,
+      status: 'completed' as const,
+      descriptionRaw: 'העברה',
+      memo: undefined,
+      installmentNumber: undefined,
+      installmentTotal: undefined,
+    });
+    await ingest(deps.db, { sourceId: id, rows: [row('7', '2026-05-01', -100)] });
+    const collide = [row('7', '2026-05-01', -100), row('7', '2026-05-09', -999)];
+    expect(await ingest(deps.db, { sourceId: id, rows: collide })).toMatchObject({
+      rowsAdded: 1,
+      downgraded: true,
+      hashKind: 'fields',
+    });
+    expect(await ingest(deps.db, { sourceId: id, rows: collide })).toMatchObject({
+      rowsAdded: 0,
+      downgraded: false,
+      hashKind: 'fields',
+    });
   });
 
   it('startDateFor overlaps the last success by two weeks but never beyond the backfill horizon', () => {

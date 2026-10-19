@@ -12,7 +12,7 @@ The only call into `israeli-bank-scrapers` is `createScraper(options).scrape(cre
 
 ## Database roles
 
-`pinkas_migrator` (schema owner), `pinkas_api`, `pinkas_worker` (transactions/accounts/sync_runs only), `pinkas_readonly` (reporting views, `default_transaction_read_only`), `pinkas_backup`. Grants are in `packages/db/src/grants.sql` and re-applied after each migration.
+`pinkas_migrator` (schema owner), `pinkas_api`, `pinkas_worker` (transactions/accounts/sync_runs only), `pinkas_readonly` (reporting views, `default_transaction_read_only`), `pinkas_backup`. Grants are in `packages/db/grants.sql` and re-applied after each migration.
 
 ## Network
 

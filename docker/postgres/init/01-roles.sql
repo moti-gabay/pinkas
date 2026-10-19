@@ -1,5 +1,5 @@
 -- Least-privilege roles. Passwords come from docker secrets via 02-passwords.sh (generated, never committed).
--- Grants on tables are applied by the migration script after each migration (packages/db/src/grants.sql),
+-- Grants on tables are applied by the migration script after each migration (packages/db/grants.sql),
 -- so new tables never silently become readable by the wrong role.
 CREATE ROLE pinkas_migrator LOGIN;
 CREATE ROLE pinkas_api LOGIN;

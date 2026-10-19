@@ -1,4 +1,8 @@
-/** Builds the API against a fresh migrated test database with the taxonomy seeded and a logged-in session. */
+/**
+ * Builds the API against a fresh migrated test database with the taxonomy seeded and a logged-in session.
+ * The app itself connects as the real `pinkas_api` role, so every API test also proves the role's grants are
+ * sufficient. `db`/`pool` returned here are superuser handles for arranging fixtures and asserting outcomes.
+ */
 import { mkdtemp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -17,7 +21,7 @@ export async function startTestApp() {
   const t: TestDb = await startTestDb();
   await seedTaxonomy(t.db);
   const uploadDir = await mkdtemp(join(tmpdir(), 'pinkas-uploads-'));
-  const app = await buildApp({ pool: t.pool, uploadDir });
+  const app = await buildApp({ pool: await t.asRole('pinkas_api'), uploadDir });
   const setup = await app.inject({
     method: 'POST',
     url: '/auth/setup',

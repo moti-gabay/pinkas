@@ -49,6 +49,15 @@ describe('scraper sources and sync requests', () => {
     expect(wrong.statusCode).toBe(400);
   });
 
+  it("the API's own database handle cannot read the ciphertext it just stored", async () => {
+    await expect(t.app.db.select().from(schema.credentials)).rejects.toThrow();
+    await expect(t.app.pool.query('SELECT ciphertext FROM credentials')).rejects.toThrow(
+      /permission denied/,
+    );
+    const meta = await t.app.pool.query('SELECT source_id, key_fingerprint FROM credentials');
+    expect(meta.rowCount).toBe(1);
+  });
+
   it('queues a manual sync once and lists runs', async () => {
     const id = (await t.app.inject({ method: 'GET', url: '/sources', headers: t.auth })).json<
       { id: string }[]

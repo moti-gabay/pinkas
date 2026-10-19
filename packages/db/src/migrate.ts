@@ -11,7 +11,7 @@ import type pg from 'pg';
 const here = dirname(fileURLToPath(import.meta.url));
 // Works from src (tsx) and dist (node).
 const migrationsDir = join(here, '..', 'migrations');
-const grantsFile = join(here, 'grants.sql');
+const grantsFile = join(here, '..', 'grants.sql');
 
 const BREAKPOINT = '--> statement-breakpoint';
 
