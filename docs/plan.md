@@ -340,7 +340,7 @@ All month math via `Temporal.PlainDate` in `Asia/Jerusalem`; scraper ISO timesta
 - `worker-egress` network is `internal: true`; worker's only route is `egress-proxy` (tinyproxy with `Filter` allowlist: `*.fibi.co.il`, `*.leumi.co.il`, `*.max.co.il`, `*.cal-online.co.il`, `*.isracard.co.il`, plus their CDNs). Puppeteer launched with `--proxy-server=egress-proxy:8888`. Allowlist discovery: `EGRESS_MODE=log` first run logs denied hosts; then lock to `enforce`. Documented risk: bank CDN changes break sync (visible as `TIMEOUT` + proxy denial log).
 - Worker container: non-root user, `read_only: true` fs with tmpfs `/tmp`, `cap_drop: ALL`, `no-new-privileges`, Chromium with `--no-sandbox` **only because** the container itself is the sandbox (ADR-0005).
 - Postgres: no `ports:`; data volume on an encrypted host disk (WSL: enable BitLocker on the Windows volume; documented). Passwords via docker secrets files.
-- `api` listens on `127.0.0.1:3000`, `web` dev server on `127.0.0.1:5173`, MCP on `127.0.0.1:3100`.
+- `api` listens on `127.0.0.1:3010` (was 3000; moved 2026-10-20 to avoid other local dev servers, host port `PINKAS_API_PORT`), `web` dev server on `127.0.0.1:5173`, MCP on `127.0.0.1:3100`.
 
 ### 6.3 API hardening
 

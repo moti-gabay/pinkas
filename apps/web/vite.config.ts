@@ -9,7 +9,7 @@ export default defineConfig({
     host: '127.0.0.1',
     proxy: {
       '/api': {
-        target: process.env['API_URL'] ?? 'http://127.0.0.1:3000',
+        target: process.env['API_URL'] ?? 'http://127.0.0.1:3010',
         changeOrigin: false,
         rewrite: (p) => p.replace(/^\/api/, ''),
       },

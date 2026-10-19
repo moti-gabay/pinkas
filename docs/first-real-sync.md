@@ -6,7 +6,7 @@ Prepared 2026-10-19, not yet run. One bank, one source, one attempt at a time. B
 
 - [ ] `~/.pinkas/backup.key` is in your password manager (see `docs/backup-restore.md`).
 - [ ] You can log in to beinleumi in a normal browser with the same username and password right now. If the bank wants a password change or shows a notice, deal with it there first.
-- [ ] Nothing else is listening on the stack's ports: `ss -ltn | grep -E ':(3000|5173|3100)\s'` prints nothing. (Another project's `next dev` held port 3000 during testing; the api then fails to start with "address already in use".)
+- [ ] Nothing else is listening on the stack's ports: `ss -ltn | grep -E ':(3010|5173|3100)\s'` prints nothing. The api is on 127.0.0.1:3010 (`PINKAS_API_PORT` in `.env`), away from the usual dev-server port 3000; web 5173, MCP 3100.
 - [ ] `main` is green in CI and `git status` is clean.
 
 ## 1. Keys and `.env`

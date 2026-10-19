@@ -5,7 +5,7 @@ export const config = loadEnv({
   ...commonEnv,
   ...databaseUrlEnv,
   API_HOST: z.string().default('127.0.0.1'),
-  API_PORT: z.coerce.number().int().min(1).max(65535).default(3000),
+  API_PORT: z.coerce.number().int().min(1).max(65535).default(3010),
   SESSION_SECRET: z.string().min(32),
   /** X25519 public key (base64) used to seal bank credentials. The private key never reaches this process. */
   CREDENTIALS_PUBLIC_KEY: z.string().min(40).optional(),

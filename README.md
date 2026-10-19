@@ -31,7 +31,7 @@ cp .env.example .env          # fill SESSION_SECRET, CREDENTIALS_PUBLIC_KEY, MCP
 docker compose up -d --build
 ```
 
-Open http://127.0.0.1:5173. Everything is bound to localhost; nothing is reachable from your LAN.
+Open http://127.0.0.1:5173. Everything is bound to localhost; nothing is reachable from your LAN. The api is on 127.0.0.1:3010 (`PINKAS_API_PORT` in `.env`), clear of the port 3000 most dev servers use.
 
 ### Development
 
